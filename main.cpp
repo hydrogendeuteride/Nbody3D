@@ -7,7 +7,7 @@ float nodeY[MAX_NODES];
 float nodeWidth[MAX_NODES];
 float nodeHeight[MAX_NODES];
 int nodeParticleIndex[MAX_NODES];
-int nodeChildren[MAX_NODES][4];
+int nodeChildren[MAX_NODES][OCT_CHILD];
 
 float nodeTotalMass[MAX_NODES];
 float nodeCOM_X[MAX_NODES];

@@ -6,11 +6,12 @@
 class Octree
 {
 private:
-    static unsigned int expandBits(unsigned int v);
+    static uint64_t expandBits(uint64_t v);
 
-    static unsigned int morton2D(float x, float y);
+    static uint64_t  morton3D(float x, float y, float z);
 
-    int createNode(float x, float y, float width, float height, const SimulationData &data);
+    int createNode(float x, float y, float z, float width, float height, float depth,
+                   const SimulationData &data);
 
     struct pair
     {
