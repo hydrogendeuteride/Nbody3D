@@ -191,7 +191,7 @@ void Octree::buildTree(const SimulationData &data)
 
 #pragma omp parallel for shared(rootNodeIndex, data)\
                         default(none) \
-                        schedule(static, 100)
+                        schedule(dynamic)
     for (int i = 0; i < MAX_PARTICLES; i++)
     {
         int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);

@@ -91,11 +91,9 @@ void boundaryDetection(int particleIdx, float offset, const SimulationData &data
 
 void updateAllParticles(float damping, float dt, const SimulationData &data)
 {
-    Velocity_Verlet<decltype(&netAcceleration)> integrator;
-    integrator.setDampingFactor(damping);
-    integrator(netAcceleration, dt, data);
+    Velocity_Verlet<decltype(&netAcceleration)> (netAcceleration, damping, dt, data);
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < MAX_PARTICLES; ++i)
     {
         boundaryDetection(i, 1.0f, data);
