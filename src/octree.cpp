@@ -36,6 +36,17 @@ uint64_t Octree::morton3D(float x, float y, float z)
     return xx | (yy << 1) | (zz << 2);
 }
 
+bool Octree::noChildren(const SimulationData &data, int nodeIndex)
+{
+    for (int i = 0; i < OCT_CHILD; ++i)
+    {
+        if (data.nodeChildren[nodeIndex][i] != NULL_INDEX)
+            return false;
+    }
+
+    return true;
+}
+
 int Octree::createNode(float x, float y, float z, float width, float height, float depth,
                        const SimulationData &data)
 {
@@ -72,8 +83,9 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
         particleIndex = top.particle;
 
         // If the node is a leaf node with no children, simply insert the particle
-        if (data.nodeParticleIndex[nodeIndex] == NULL_INDEX && data.nodeChildren[nodeIndex][0] == NULL_INDEX)
+        if (data.nodeParticleIndex[nodeIndex] == NULL_INDEX && noChildren(data, nodeIndex))
         {
+
             data.nodeParticleIndex[nodeIndex] = particleIndex;
             data.nodeTotalMass[nodeIndex] = data.particleMass[particleIndex];
             data.nodeCOM_X[nodeIndex] = data.particleX[particleIndex];
@@ -87,7 +99,7 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
             float halfDepth = data.nodeDepth[nodeIndex] / 2.0f;
             // If the node already contains a particle or has children, we need to update the COM and mass
             // Generate new node for existing particle and push them to stack
-            if (data.nodeParticleIndex[nodeIndex] != NULL_INDEX || data.nodeChildren[nodeIndex][0] != NULL_INDEX)
+            if (data.nodeParticleIndex[nodeIndex] != NULL_INDEX || !noChildren(data, nodeIndex))
             {
                 // If the node was previously a leaf node with a particle, we need to create children and redistribute
                 if (data.nodeParticleIndex[nodeIndex] != NULL_INDEX)
@@ -120,7 +132,6 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
                     }
                     stack.push({data.nodeChildren[nodeIndex][childIndex], existingParticleIndex});
                 }
-
                 // Calculate the new COM and total mass by including the new particle
                 float newParticleMass = data.particleMass[particleIndex];
                 float newParticleX = data.particleX[particleIndex];
@@ -175,7 +186,7 @@ void Octree::buildTree(const SimulationData &data)
 {
     nodeCount = 0;
     int rootNodeIndex = createNode(-32768.0f, -32768.0f, -32768.0f,
-                                   65536.0f, 65536.0f, 65536.0f,data);
+                                   65536.0f, 65536.0f, 65536.0f, data);
 
     unsigned int mortonIndex[MAX_PARTICLES];
 
@@ -190,8 +201,7 @@ void Octree::buildTree(const SimulationData &data)
               [&mortonIndex](int i1, int i2) { return mortonIndex[i1] < mortonIndex[i2]; });
 
 #pragma omp parallel for shared(rootNodeIndex, data)\
-                        default(none) \
-                        schedule(dynamic)
+                        default(none)
     for (int i = 0; i < MAX_PARTICLES; i++)
     {
         int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);

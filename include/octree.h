@@ -13,6 +13,8 @@ private:
     int createNode(float x, float y, float z, float width, float height, float depth,
                    const SimulationData &data);
 
+    static bool noChildren(const SimulationData& data, int nodeIndex);
+
     struct pair
     {
         int node;
