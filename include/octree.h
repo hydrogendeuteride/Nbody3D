@@ -6,14 +6,10 @@
 class Octree
 {
 private:
-    static uint64_t expandBits(uint64_t v);
-
-    static uint64_t  morton3D(float x, float y, float z);
-
     int createNode(float x, float y, float z, float width, float height, float depth,
                    const SimulationData &data);
 
-    static bool noChildren(const SimulationData& data, int nodeIndex);
+    static bool noChildren(const SimulationData &data, int nodeIndex);
 
     struct pair
     {
@@ -24,6 +20,8 @@ private:
     void insertParticleToNode(int nodeIndex, int particleIndex, const SimulationData &data);
 
     int nodeCount = 0;
+
+    void generateNode(SimulationData &data, int first, int last);
 
 public:
     void buildTree(const SimulationData &data);

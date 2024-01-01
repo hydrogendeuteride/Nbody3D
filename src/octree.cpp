@@ -1,10 +1,25 @@
 #include <algorithm>
+#include <cmath>
 #include <stack>
 #include <numeric>
+#include <cmath>
 #include "octree.h"
 #include "omp.h"
 
-uint64_t Octree::expandBits(uint64_t v)
+template<unsigned int p>
+int constexpr IntPower(const int x)
+{
+    if constexpr (p == 0) return 1;
+    if constexpr (p == 1) return x;
+
+    int tmp = IntPower<p / 2>(x);
+    if constexpr ((p % 2) == 0)
+    { return tmp * tmp; }
+    else
+    { return x * tmp * tmp; }
+}
+
+static constexpr uint64_t expandBits(uint64_t v)
 {
     v = (v | v << 32) & 0x1f00000000ffff;
     v = (v | v << 16) & 0x1f0000ff0000ff;
@@ -15,7 +30,7 @@ uint64_t Octree::expandBits(uint64_t v)
     return v;
 }
 
-uint64_t Octree::morton3D(float x, float y, float z)
+static constexpr uint64_t morton3D(float x, float y, float z)
 {
     x += 32768.0f;
     y += 32768.0f;
@@ -36,6 +51,29 @@ uint64_t Octree::morton3D(float x, float y, float z)
     return xx | (yy << 1) | (zz << 2);
 }
 
+static constexpr uint64_t compactBits(uint64_t v)
+{
+    v &= 0x1249249249249249;
+    v = (v ^ (v >> 2)) & 0x10c30c30c30c30c3;
+    v = (v ^ (v >> 4)) & 0x100f00f00f00f00f;
+    v = (v ^ (v >> 8)) & 0x1f0000ff0000ff;
+    v = (v ^ (v >> 16)) & 0x1f00000000ffff;
+    v = (v ^ (v >> 32)) & 0xffff;
+    return v;
+}
+
+static constexpr void morton3DInverse(uint64_t code, float &x, float &y, float &z)
+{
+    uint64_t xx = compactBits(code);
+    uint64_t yy = compactBits(code >> 1);
+    uint64_t zz = compactBits(code >> 2);
+
+    x = static_cast<float>(xx) - 32768.0f;
+    y = static_cast<float>(yy) - 32768.0f;
+    z = static_cast<float>(zz) - 32768.0f;
+}
+
+
 bool Octree::noChildren(const SimulationData &data, int nodeIndex)
 {
     for (int i = 0; i < OCT_CHILD; ++i)
@@ -45,6 +83,42 @@ bool Octree::noChildren(const SimulationData &data, int nodeIndex)
     }
 
     return true;
+}
+
+void Octree::generateNode(SimulationData &data, int first, int last)
+{
+    int depth = 0;
+    int bitShift = 3;
+    while ((float) depth < std::ceil(log2f(MAX_PARTICLES) / 3.0f))
+    {
+        //can be parallelized using depth(bitshift level)
+        first = 0;
+
+        while (last < MAX_PARTICLES)
+        {
+            last = first + 1;
+            int childs[8];
+            int idx = 0;
+
+            while (last < MAX_PARTICLES && (data.idxSorted[first] >> bitShift) == (data.idxSorted[last] >> bitShift))
+            {
+                childs[idx] = first;
+                idx++;
+                last++; // one more child node to node
+            }
+
+            //else, generate node and move right
+            float x, y, z;
+            morton3DInverse(data.idxSorted[first], x, y, z);
+            float size = powf(2.0f, (float) depth);
+            createNode(x, y, z, size, size, size, data);
+            //todo: edit createNode to save node child information.
+            first = last;
+        }
+
+        depth++;
+        bitShift += 3;
+    }
 }
 
 int Octree::createNode(float x, float y, float z, float width, float height, float depth,
