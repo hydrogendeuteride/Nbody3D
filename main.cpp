@@ -107,9 +107,7 @@ int main()
     particleX[13] = -20370.03f; particleY[13] = -7945.42f; particleZ[13] = 25188.28f; particleMass[13] = 1.0f;
     particleX[14] = 21400.56f; particleY[14] = 17892.08f; particleZ[14] = -14832.05f; particleMass[14] = 1.0f;
     particleX[15] = -14239.26f; particleY[15] = -29357.75f; particleZ[15] = 779.64f; particleMass[15] = 1.0f;
-    //particleX[16] = -27288.70f; particleY[16] = 26340.22f; particleZ[16] = 21976.93f; particleMass[16] = 1.0f;
-
-
+    particleX[16] = -27288.70f; particleY[16] = 26340.22f; particleZ[16] = 21976.93f; particleMass[16] = 1.0f;
 
     SimulationData data{};
 
@@ -148,8 +146,8 @@ int main()
     std::cout<<std::endl;
 
     updateAllParticles(0.98f, 0.0f, data);
-    //tree.buildTree(data);
-    //printNode(0);
+    tree.buildTree(data);
+    printNode(0);
 
     return 0;
 }

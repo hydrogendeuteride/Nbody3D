@@ -85,12 +85,13 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
         // If the node is a leaf node with no children, simply insert the particle
         if (data.nodeParticleIndex[nodeIndex] == NULL_INDEX && noChildren(data, nodeIndex))
         {
-
             data.nodeParticleIndex[nodeIndex] = particleIndex;
+
             data.nodeTotalMass[nodeIndex] = data.particleMass[particleIndex];
             data.nodeCOM_X[nodeIndex] = data.particleX[particleIndex];
             data.nodeCOM_Y[nodeIndex] = data.particleY[particleIndex];
             data.nodeCOM_Z[nodeIndex] = data.particleZ[particleIndex];
+
         }
         else
         {
@@ -153,7 +154,6 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
                         (data.nodeCOM_Z[nodeIndex] * totalMassBeforeInsert + newParticleZ * newParticleMass) /
                         data.nodeTotalMass[nodeIndex];
             }
-
             // Determine the quadrant for the new particle and create a new child node if necessary
             int childIndex = 0;
             if (data.particleX[particleIndex] > data.nodeX[nodeIndex] + halfWidth)
@@ -200,8 +200,10 @@ void Octree::buildTree(const SimulationData &data)
     std::sort(data.idxSorted, data.idxSorted + MAX_PARTICLES,
               [&mortonIndex](int i1, int i2) { return mortonIndex[i1] < mortonIndex[i2]; });
 
+//todo: change this approach to
 #pragma omp parallel for shared(rootNodeIndex, data)\
-                        default(none)
+                        default(none) schedule(static, 1)
+    //You must set schedule(static) or race condition occurs
     for (int i = 0; i < MAX_PARTICLES; i++)
     {
         int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);
