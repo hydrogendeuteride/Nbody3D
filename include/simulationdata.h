@@ -1,7 +1,16 @@
 #ifndef NBODY3D_SIMULATIONDATA_H
 #define NBODY3D_SIMULATIONDATA_H
 
-constexpr unsigned int OCT_CHILD = 8;
+#include <cstdint>
+
+constexpr int OCT_CHILD = 8;
+
+constexpr int NULL_INDEX = -1;
+
+constexpr int MAX_NODES = 1000;
+constexpr int MAX_PARTICLES = 1000;
+
+constexpr float THETA = 0.5;
 
 struct SimulationData
 {
@@ -35,13 +44,9 @@ struct SimulationData
     float *accZ;
 
     unsigned int *idxSorted;
+    uint64_t *mortonIndex;
 };
 
-constexpr int NULL_INDEX = -1;
 
-constexpr int MAX_NODES = 1000;
-constexpr int MAX_PARTICLES = 1000;
-
-constexpr float THETA = 0.5;
 
 #endif //NBODY3D_SIMULATIONDATA_H

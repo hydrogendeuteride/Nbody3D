@@ -17,14 +17,14 @@ private:
         int particle;
     };
 
-    void insertParticleToNode(int nodeIndex, int particleIndex, const SimulationData &data);
-
     int nodeCount = 0;
 
-    void generateNode(SimulationData &data, int first, int last);
+    int generateNode(SimulationData &data);
+
+    void nodeCOMInit(SimulationData &data);
 
 public:
-    void buildTree(const SimulationData &data);
+    int buildTree(SimulationData &data);
 };
 
 #endif //NBODY3D_OCTREE_H

@@ -1,8 +1,6 @@
-#include <algorithm>
 #include <cmath>
 #include <stack>
 #include <numeric>
-#include <cmath>
 #include "octree.h"
 #include "omp.h"
 
@@ -73,6 +71,45 @@ static constexpr void morton3DInverse(uint64_t code, float &x, float &y, float &
     z = static_cast<float>(zz) - 32768.0f;
 }
 
+static int findJustBigNumber(const uint64_t *arr, int left, int right, uint64_t number)
+{
+    while (left <= right)
+    {
+        int mid = left + (right - left) / 2;
+
+        if (arr[mid] >= number)
+        {
+            if (arr[mid] == number)
+                return mid;
+            right = mid - 1;
+        }
+        else
+        {
+            left = mid + 1;
+        }
+    }
+    return left < right ? left : -1;
+}
+
+static int findJustSmallNumber(const uint64_t *arr, int left, int right, uint64_t number)
+{
+    while (left <= right)
+    {
+        int mid = left + (right - left) / 2;
+
+        if (arr[mid] <= number)
+        {
+            if (arr[mid] == number)
+                return mid;
+            left = mid + 1;
+        }
+        else
+        {
+            right = mid - 1;
+        }
+    }
+    return right >= 0 ? right : -1;
+}
 
 bool Octree::noChildren(const SimulationData &data, int nodeIndex)
 {
@@ -85,40 +122,58 @@ bool Octree::noChildren(const SimulationData &data, int nodeIndex)
     return true;
 }
 
-void Octree::generateNode(SimulationData &data, int first, int last)
+int Octree::generateNode(SimulationData &data)    //needs sorted morton code array
 {
+    int first;
+    int last = 0;
+
+    int rootIndex = -1;
+
     int depth = 0;
     int bitShift = 3;
-    while ((float) depth < std::ceil(log2f(MAX_PARTICLES) / 3.0f))
+    while ((float) depth < std::ceil(log2f(MAX_PARTICLES) / 3.0f))  //iterate by  tree depth
     {
         //can be parallelized using depth(bitshift level)
         first = 0;
 
+        int child[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+        child[0] = first;
+        int idx = 1;
+
         while (last < MAX_PARTICLES)
         {
             last = first + 1;
-            int childs[8];
-            int idx = 0;
 
-            while (last < MAX_PARTICLES && (data.idxSorted[first] >> bitShift) == (data.idxSorted[last] >> bitShift))
+            while (last < MAX_PARTICLES &&
+                   (data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last] >> bitShift))
             {
-                childs[idx] = first;
-                idx++;
-                last++; // one more child node to node
+                if (idx < 8)
+                {
+                    child[idx] = last;
+                    idx++;
+                }
+
+                last++; //Move when meets same depth of node
             }
 
-            //else, generate node and move right
-            float x, y, z;
-            morton3DInverse(data.idxSorted[first], x, y, z);
-            float size = powf(2.0f, (float) depth);
-            createNode(x, y, z, size, size, size, data);
-            //todo: edit createNode to save node child information.
+            if (last < MAX_PARTICLES && (data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last - 1] >> bitShift))
+            {
+                //If particle is alone in one big node, prevent generating every node in every depth iteration  
+                float x, y, z;
+                morton3DInverse(data.mortonIndex[first], x, y, z);
+                float size = powf(2.0f, (float) (depth) + 1);   //You should generate one size big node 
+                int nodeIndex = createNode(x, y, z, size, size, size, data);
+                if (depth == 0) rootIndex = nodeIndex;
+            }
+
             first = last;
         }
 
         depth++;
         bitShift += 3;
     }
+
+    return rootIndex;
 }
 
 int Octree::createNode(float x, float y, float z, float width, float height, float depth,
@@ -144,144 +199,59 @@ int Octree::createNode(float x, float y, float z, float width, float height, flo
     return index;
 }
 
-void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const SimulationData &data)
+void Octree::nodeCOMInit(SimulationData &data)
 {
-    std::stack<pair> stack;
-    stack.push({nodeIndex, particleIndex});
-
-    while (!stack.empty())
+    for (int i = 0; i < MAX_NODES; ++i) //Can be parallelized
     {
-        auto top = stack.top();
-        stack.pop();
-        nodeIndex = top.node;
-        particleIndex = top.particle;
+        float x = data.nodeX[i];
+        float y = data.nodeY[i];
+        float z = data.nodeZ[i];
 
-        // If the node is a leaf node with no children, simply insert the particle
-        if (data.nodeParticleIndex[nodeIndex] == NULL_INDEX && noChildren(data, nodeIndex))
+        float size = data.nodeWidth[i];
+
+        uint64_t first = morton3D(x, y, z);
+        uint64_t last = morton3D(x + size, y + size, z + size);
+
+        int f = findJustBigNumber(data.mortonIndex, 0, MAX_PARTICLES, first);
+        int l = findJustSmallNumber(data.mortonIndex, 0, MAX_PARTICLES, last);
+
+        for (int j = f; j <= l; ++j)
         {
-
-            data.nodeParticleIndex[nodeIndex] = particleIndex;
-            data.nodeTotalMass[nodeIndex] = data.particleMass[particleIndex];
-            data.nodeCOM_X[nodeIndex] = data.particleX[particleIndex];
-            data.nodeCOM_Y[nodeIndex] = data.particleY[particleIndex];
-            data.nodeCOM_Z[nodeIndex] = data.particleZ[particleIndex];
-        }
-        else
-        {
-            float halfWidth = data.nodeWidth[nodeIndex] / 2.0f;
-            float halfHeight = data.nodeHeight[nodeIndex] / 2.0f;
-            float halfDepth = data.nodeDepth[nodeIndex] / 2.0f;
-            // If the node already contains a particle or has children, we need to update the COM and mass
-            // Generate new node for existing particle and push them to stack
-            if (data.nodeParticleIndex[nodeIndex] != NULL_INDEX || !noChildren(data, nodeIndex))
+            if (data.particleMass[j] > 0)
             {
-                // If the node was previously a leaf node with a particle, we need to create children and redistribute
-                if (data.nodeParticleIndex[nodeIndex] != NULL_INDEX)
-                {
-                    int existingParticleIndex = data.nodeParticleIndex[nodeIndex];
-                    data.nodeParticleIndex[nodeIndex] = NULL_INDEX;
+                float totalMassBeforeInsert = data.nodeTotalMass[i];
+                float newParticleMass = data.particleMass[j];
 
-                    int childIndex = 0;
-                    if (data.particleX[existingParticleIndex] > data.nodeX[nodeIndex] + halfWidth)
-                    {
-                        childIndex |= 1;
-                    }
-                    if (data.particleY[existingParticleIndex] > data.nodeY[nodeIndex] + halfHeight)
-                    {
-                        childIndex |= 2;
-                    }
-                    if (data.particleZ[existingParticleIndex] > data.nodeZ[nodeIndex] + halfDepth)
-                    {
-                        childIndex |= 4;
-                    }
-
-                    if (data.nodeChildren[nodeIndex][childIndex] == NULL_INDEX)
-                    {
-                        float childX = data.nodeX[nodeIndex] + (childIndex & 1 ? halfWidth : 0);
-                        float childY = data.nodeY[nodeIndex] + (childIndex & 2 ? halfHeight : 0);
-                        float childZ = data.nodeZ[nodeIndex] + (childIndex & 4 ? halfDepth : 0);
-                        data.nodeChildren[nodeIndex][childIndex] = createNode(childX, childY, childZ,
-                                                                              halfWidth, halfHeight, halfDepth,
-                                                                              data);
-                    }
-                    stack.push({data.nodeChildren[nodeIndex][childIndex], existingParticleIndex});
-                }
-                // Calculate the new COM and total mass by including the new particle
-                float newParticleMass = data.particleMass[particleIndex];
-                float newParticleX = data.particleX[particleIndex];
-                float newParticleY = data.particleY[particleIndex];
-                float newParticleZ = data.particleZ[particleIndex];
-                float totalMassBeforeInsert = data.nodeTotalMass[nodeIndex];
-
-                // Update the node's total mass
-                data.nodeTotalMass[nodeIndex] += newParticleMass;
-
-                // Update the node's COM using the formula: newCOM = (oldCOM * oldMass + newParticlePos * newParticleMass) / newTotalMass
-                data.nodeCOM_X[nodeIndex] =
-                        (data.nodeCOM_X[nodeIndex] * totalMassBeforeInsert + newParticleX * newParticleMass) /
-                        data.nodeTotalMass[nodeIndex];
-                data.nodeCOM_Y[nodeIndex] =
-                        (data.nodeCOM_Y[nodeIndex] * totalMassBeforeInsert + newParticleY * newParticleMass) /
-                        data.nodeTotalMass[nodeIndex];
-                data.nodeCOM_Z[nodeIndex] =
-                        (data.nodeCOM_Z[nodeIndex] * totalMassBeforeInsert + newParticleZ * newParticleMass) /
-                        data.nodeTotalMass[nodeIndex];
+                data.nodeTotalMass[i] += newParticleMass;
+                data.nodeCOM_X[i] = (data.nodeCOM_X[i] * totalMassBeforeInsert +
+                                     data.particleX[j] * newParticleMass) / data.nodeTotalMass[i];
+                data.nodeCOM_Y[i] = (data.nodeCOM_Y[i] * totalMassBeforeInsert +
+                                     data.particleY[j] * newParticleMass) / data.nodeTotalMass[i];
+                data.nodeCOM_Z[i] = (data.nodeCOM_Z[i] * totalMassBeforeInsert +
+                                     data.particleZ[j] * newParticleMass) / data.nodeTotalMass[i];
             }
-
-            // Determine the quadrant for the new particle and create a new child node if necessary
-            int childIndex = 0;
-            if (data.particleX[particleIndex] > data.nodeX[nodeIndex] + halfWidth)
-                childIndex |= 1;
-
-            if (data.particleY[particleIndex] > data.nodeY[nodeIndex] + halfHeight)
-                childIndex |= 2;
-
-            if (data.particleZ[particleIndex] > data.nodeZ[nodeIndex] + halfDepth)
-                childIndex |= 4;
-
-            if (data.nodeChildren[nodeIndex][childIndex] == NULL_INDEX)
-            {
-                float childX = data.nodeX[nodeIndex] + (childIndex & 1 ? halfWidth : 0);
-                float childY = data.nodeY[nodeIndex] + (childIndex & 2 ? halfHeight : 0);
-                float childZ = data.nodeZ[nodeIndex] + (childIndex & 4 ? halfDepth : 0);
-
-                data.nodeChildren[nodeIndex][childIndex] = createNode(childX, childY, childZ,
-                                                                      halfWidth, halfHeight, halfDepth,
-                                                                      data);
-            }
-
-            // Push the new particle to the appropriate child node
-            stack.push({data.nodeChildren[nodeIndex][childIndex], particleIndex});
         }
     }
 }
 
-void Octree::buildTree(const SimulationData &data)
+int Octree::buildTree(SimulationData &data)
 {
     nodeCount = 0;
-    int rootNodeIndex = createNode(-32768.0f, -32768.0f, -32768.0f,
-                                   65536.0f, 65536.0f, 65536.0f, data);
-
-    unsigned int mortonIndex[MAX_PARTICLES];
 
     std::iota(data.idxSorted, data.idxSorted + MAX_PARTICLES, 0);
 
     for (int i = 0; i < MAX_PARTICLES; ++i)
     {
-        mortonIndex[i] = morton3D(data.particleX[i], data.particleY[i], data.particleZ[i]);
+        data.mortonIndex[i] = morton3D(data.particleX[i], data.particleY[i], data.particleZ[i]);
     }
 
     std::sort(data.idxSorted, data.idxSorted + MAX_PARTICLES,
-              [&mortonIndex](int i1, int i2) { return mortonIndex[i1] < mortonIndex[i2]; });
+              [&data](int i1, int i2) { return data.mortonIndex[i1] < data.mortonIndex[i2]; });
 
-#pragma omp parallel for shared(rootNodeIndex, data)\
-                        default(none)
-    for (int i = 0; i < MAX_PARTICLES; i++)
-    {
-        int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);
-        if (data.particleMass[sortedParticleIndex] > 0)
-        {
-            insertParticleToNode(rootNodeIndex, sortedParticleIndex, data);
-        }
-    }
+    std::sort(data.mortonIndex, data.mortonIndex + MAX_PARTICLES);
+
+    int root = generateNode(data);
+    nodeCOMInit(data);
+
+    return root;
 }
