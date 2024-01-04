@@ -70,10 +70,12 @@ int Octree::createNode(float x, float y, float z, float width, float height, flo
     return index;
 }
 
-void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const SimulationData &data)
+void Octree::insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth, const SimulationData &data)
 {
     std::stack<pair> stack;
-    stack.push({nodeIndex, particleIndex});
+    stack.push({nodeIndex, particleIndex, 0});
+
+    int depth;
 
     while (!stack.empty())
     {
@@ -81,6 +83,7 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
         stack.pop();
         nodeIndex = top.node;
         particleIndex = top.particle;
+        depth = top.depth;
 
         // If the node is a leaf node with no children, simply insert the particle
         if (data.nodeParticleIndex[nodeIndex] == NULL_INDEX && noChildren(data, nodeIndex))
@@ -122,7 +125,7 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
                         childIndex |= 4;
                     }
 
-                    if (data.nodeChildren[nodeIndex][childIndex] == NULL_INDEX)
+                    if (data.nodeChildren[nodeIndex][childIndex] == NULL_INDEX && depth < maxDepth)
                     {
                         float childX = data.nodeX[nodeIndex] + (childIndex & 1 ? halfWidth : 0);
                         float childY = data.nodeY[nodeIndex] + (childIndex & 2 ? halfHeight : 0);
@@ -131,7 +134,8 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
                                                                               halfWidth, halfHeight, halfDepth,
                                                                               data);
                     }
-                    stack.push({data.nodeChildren[nodeIndex][childIndex], existingParticleIndex});
+                    if (depth < maxDepth)
+                        stack.push({data.nodeChildren[nodeIndex][childIndex], existingParticleIndex, ++depth});
                 }
                 // Calculate the new COM and total mass by including the new particle
                 float newParticleMass = data.particleMass[particleIndex];
@@ -165,7 +169,7 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
             if (data.particleZ[particleIndex] > data.nodeZ[nodeIndex] + halfDepth)
                 childIndex |= 4;
 
-            if (data.nodeChildren[nodeIndex][childIndex] == NULL_INDEX)
+            if (data.nodeChildren[nodeIndex][childIndex] == NULL_INDEX && depth < maxDepth)
             {
                 float childX = data.nodeX[nodeIndex] + (childIndex & 1 ? halfWidth : 0);
                 float childY = data.nodeY[nodeIndex] + (childIndex & 2 ? halfHeight : 0);
@@ -177,7 +181,8 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, const Simula
             }
 
             // Push the new particle to the appropriate child node
-            stack.push({data.nodeChildren[nodeIndex][childIndex], particleIndex});
+            if (depth < maxDepth)
+                stack.push({data.nodeChildren[nodeIndex][childIndex], particleIndex, ++depth});
         }
     }
 }
@@ -200,16 +205,12 @@ void Octree::buildTree(const SimulationData &data)
     std::sort(data.idxSorted, data.idxSorted + MAX_PARTICLES,
               [&mortonIndex](int i1, int i2) { return mortonIndex[i1] < mortonIndex[i2]; });
 
-//todo: change this approach to
-#pragma omp parallel for shared(rootNodeIndex, data)\
-                        default(none) schedule(static, 1)
-    //You must set schedule(static) or race condition occurs
     for (int i = 0; i < MAX_PARTICLES; i++)
     {
         int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);
         if (data.particleMass[sortedParticleIndex] > 0)
         {
-            insertParticleToNode(rootNodeIndex, sortedParticleIndex, data);
+            insertParticleToNode(rootNodeIndex, sortedParticleIndex, 2, data);
         }
     }
 }

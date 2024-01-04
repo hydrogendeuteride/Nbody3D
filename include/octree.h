@@ -19,9 +19,10 @@ private:
     {
         int node;
         int particle;
+        int depth;
     };
 
-    void insertParticleToNode(int nodeIndex, int particleIndex, const SimulationData &data);
+    void insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth, const SimulationData &data);
 
     int nodeCount = 0;
 
