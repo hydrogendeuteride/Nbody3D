@@ -1,0 +1,36 @@
+#ifndef NBODY3D_SPHERE_H
+#define NBODY3D_SPHERE_H
+
+#include <vector>
+#include "glm/glm.hpp"
+#include "shader.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+class Sphere
+{
+public:
+    Sphere(int subdivision, float size);
+
+    enum class DrawType { POINTS, LINES, TRIANGLES, PATCHES };
+    void draw(const Shader& shader, const DrawType drawType = DrawType::TRIANGLES);
+
+    glm::mat4 worldMatrix;
+
+private:
+    void buildSphere(int subdivision, float size);
+
+    std::vector<float> vertices;
+
+    glm::vec3 specular;
+    glm::vec3 ambient;
+    glm::vec3 emissive;
+
+    float shininess;
+
+    unsigned int VAO, VBO;
+};
+
+#endif //NBODY3D_SPHERE_H

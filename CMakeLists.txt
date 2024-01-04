@@ -22,4 +22,6 @@ endif()
 
 add_executable(NBody3D main.cpp
         src/octree.cpp
-        src/bhtree.cpp)
+        src/bhtree.cpp
+        src/shader.cpp
+        src/sphere.cpp)
