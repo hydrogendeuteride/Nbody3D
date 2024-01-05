@@ -19,12 +19,12 @@ private:
 
     int nodeCount = 0;
 
-    int generateNode(SimulationData &data);
+    int generateNode(SimulationData &data, int numParticles);
 
     void nodeCOMInit(SimulationData &data);
 
 public:
-    int buildTree(SimulationData &data);
+    int buildTree(SimulationData &data, int numParticles);
 };
 
 #endif //NBODY3D_OCTREE_H

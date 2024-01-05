@@ -122,7 +122,7 @@ bool Octree::noChildren(const SimulationData &data, int nodeIndex)
     return true;
 }
 
-int Octree::generateNode(SimulationData &data)    //needs sorted morton code array
+int Octree::generateNode(SimulationData &data, int numParticles)    //needs sorted morton code array
 {
     int first;
     int last = 0;
@@ -140,7 +140,7 @@ int Octree::generateNode(SimulationData &data)    //needs sorted morton code arr
         child[0] = first;
         int idx = 1;
 
-        while (last < MAX_PARTICLES)
+        while (last < numParticles)
         {
             last = first + 1;
 
@@ -156,7 +156,7 @@ int Octree::generateNode(SimulationData &data)    //needs sorted morton code arr
                 last++; //Move when meets same depth of node
             }
 
-            if (last < MAX_PARTICLES && (data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last - 1] >> bitShift))
+            if (last < numParticles && (data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last - 1] >> bitShift))
             {
                 //If particle is alone in one big node, prevent generating every node in every depth iteration  
                 float x, y, z;
@@ -234,7 +234,7 @@ void Octree::nodeCOMInit(SimulationData &data)
     }
 }
 
-int Octree::buildTree(SimulationData &data)
+int Octree::buildTree(SimulationData &data, int numParticles)
 {
     nodeCount = 0;
 
