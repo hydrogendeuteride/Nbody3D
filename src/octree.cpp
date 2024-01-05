@@ -1,6 +1,7 @@
 #include <cmath>
 #include <stack>
 #include <numeric>
+#include <iostream>
 #include "octree.h"
 #include "omp.h"
 
@@ -131,46 +132,47 @@ int Octree::generateNode(SimulationData &data, int numParticles)    //needs sort
 
     int depth = 0;
     int bitShift = 3;
-    while ((float) depth < std::ceil(log2f(MAX_PARTICLES) / 3.0f))  //iterate by  tree depth
+    while ((float) depth < std::ceil(log2f(65536)))  //iterate by  tree depth
     {
         //can be parallelized using depth(bitshift level)
         first = 0;
-
-        int child[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
-        child[0] = first;
-        int idx = 1;
 
         while (last < numParticles)
         {
             last = first + 1;
 
-            while (last < MAX_PARTICLES &&
+            while (last < numParticles &&
                    (data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last] >> bitShift))
             {
-                if (idx < 8)
-                {
-                    child[idx] = last;
-                    idx++;
-                }
 
                 last++; //Move when meets same depth of node
             }
 
-            if (last < numParticles && (data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last - 1] >> bitShift))
+            if ((first != (last - 1)) &&
+                ((data.mortonIndex[first] >> bitShift) == (data.mortonIndex[last - 1] >> bitShift)))
             {
-                //If particle is alone in one big node, prevent generating every node in every depth iteration  
+                //If particle is alone in one big node, prevent generating every node in every depth iteration
                 float x, y, z;
-                morton3DInverse(data.mortonIndex[first], x, y, z);
-                float size = powf(2.0f, (float) (depth) + 1);   //You should generate one size big node 
-                int nodeIndex = createNode(x, y, z, size, size, size, data);
-                if (depth == 0) rootIndex = nodeIndex;
-            }
+                morton3DInverse(data.mortonIndex[first] >> (bitShift) << (bitShift), x, y, z);
+                float size = powf(2.0f, (float) (depth));
 
+                int nodeIndex = createNode(x, y, z, size, size, size, data);
+
+                rootIndex = nodeIndex;
+                std::cout << nodeIndex << " " << first << " " << last << " " << size << " " << x << " "
+                          << y << " " << z << " " << depth << " " << std::endl;
+
+//                morton3DInverse(data.mortonIndex[first], x, y ,z);
+//                std ::cout <<x <<" " << y <<" "<< z << " ";
+//                morton3DInverse(data.mortonIndex[last - 1], x, y ,z);
+//                std ::cout <<x <<" " << y <<" "<< z << std::endl;
+            }
             first = last;
         }
 
         depth++;
         bitShift += 3;
+        last = 0;
     }
 
     return rootIndex;
@@ -238,19 +240,19 @@ int Octree::buildTree(SimulationData &data, int numParticles)
 {
     nodeCount = 0;
 
-    std::iota(data.idxSorted, data.idxSorted + MAX_PARTICLES, 0);
+    std::iota(data.idxSorted, data.idxSorted + numParticles, 0);
 
-    for (int i = 0; i < MAX_PARTICLES; ++i)
+    for (int i = 0; i < numParticles; ++i)
     {
         data.mortonIndex[i] = morton3D(data.particleX[i], data.particleY[i], data.particleZ[i]);
     }
 
-    std::sort(data.idxSorted, data.idxSorted + MAX_PARTICLES,
+    std::sort(data.idxSorted, data.idxSorted + numParticles,
               [&data](int i1, int i2) { return data.mortonIndex[i1] < data.mortonIndex[i2]; });
 
-    std::sort(data.mortonIndex, data.mortonIndex + MAX_PARTICLES);
+    std::sort(data.mortonIndex, data.mortonIndex + numParticles);
 
-    int root = generateNode(data);
+    int root = generateNode(data, numParticles);
     nodeCOMInit(data);
 
     return root;

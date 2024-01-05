@@ -57,6 +57,8 @@ void printNode(int nodeIndex, int depth = 0)
     {
         if (nodeChildren[nodeIndex][i] != NULL_INDEX)
         {
+            if (depth > 4)
+                return;
             printNode(nodeChildren[nodeIndex][i], depth + 1);
         }
     }
@@ -74,30 +76,30 @@ int main()
     particleZ[1] = 10000.0f;
     particleMass[1] = 1.0f;
 
-//    particleX[4] = 5000.0f;
-//    particleY[4] = 5000.0f;
-//    particleZ[4] = 5000.0f;
-//    particleMass[4] = 1.0f;
-//
-//    particleX[5] = 10000.0f;
-//    particleY[5] = 5000.0f;
-//    particleZ[5] = 5000.0f;
-//    particleMass[5] = 1.0f;
+    particleX[4] = 5000.0f;
+    particleY[4] = 5000.0f;
+    particleZ[4] = 5000.0f;
+    particleMass[4] = 1.0f;
+
+    particleX[5] = 10000.0f;
+    particleY[5] = 5000.0f;
+    particleZ[5] = 5000.0f;
+    particleMass[5] = 1.0f;
 //
 //    particleX[6] = -5000.0f;
 //    particleY[6] = -5000.0f;
 //    particleZ[6] = -5000.0f;
 //    particleMass[6] = 1.0f;
-
-//    particleX[2] = -10000.0f;
-//    particleY[2] = 10000.0f;
-//    particleZ[2] = 10000.0f;
-//    particleMass[2] = 1.0f;
 //
-//    particleX[3] = 10000.0f;
-//    particleY[3] = -10000.0f;
-//    particleZ[3] = -10000.0f;
-//    particleMass[3] = 1.0f;
+    particleX[2] = -10000.0f;
+    particleY[2] = 10000.0f;
+    particleZ[2] = 10000.0f;
+    particleMass[2] = 1.0f;
+
+    particleX[3] = 10000.0f;
+    particleY[3] = -10000.0f;
+    particleZ[3] = -10000.0f;
+    particleMass[3] = 1.0f;
 
 //    particleX[7] = 32327.95f; particleY[7] = -9754.81f; particleZ[7] = 6090.91f; particleMass[7] = 1.0f;
 //    particleX[8] = -24962.18f; particleY[8] = 32054.61f; particleZ[8] = -32190.48f; particleMass[8] = 1.0f;
@@ -145,7 +147,7 @@ int main()
 
     Octree tree;
 
-    int root =  tree.buildTree(data);
+    int root =  tree.buildTree(data, 6);
 
     printNode(root);
     std::cout<<std::endl;
