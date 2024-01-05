@@ -132,7 +132,7 @@ int Octree::generateNode(SimulationData &data, int numParticles)    //needs sort
 
     int depth = 0;
     int bitShift = 3;
-    while ((float) depth < std::ceil(log2f(65536)))  //iterate by  tree depth
+    while ((float) depth < std::ceil(log2f(65536)) + 1)
     {
         //can be parallelized using depth(bitshift level)
         first = 0;
@@ -156,16 +156,28 @@ int Octree::generateNode(SimulationData &data, int numParticles)    //needs sort
                 morton3DInverse(data.mortonIndex[first] >> (bitShift) << (bitShift), x, y, z);
                 float size = powf(2.0f, (float) (depth));
 
-                int nodeIndex = createNode(x, y, z, size, size, size, data);
+                int nodeIndex = -1;//createNode(x, y, z, size, size, size, data);
+
+                uint64_t prevMorton = UINT64_MAX;
+                for (int i = first; i < last; ++i)
+                {
+                    int childIndex = (data.mortonIndex[i] >> (3 * depth)) & 7;
+
+                    float childX = x + (childIndex & 1) * size;
+                    float childY = y + ((childIndex >> 1) & 1) * size;
+                    float childZ = z + ((childIndex >> 2) & 1) * size;
+
+                    if (((data.mortonIndex[i] >> (3 * depth)) & 7) == prevMorton)
+                        continue;
+
+                    prevMorton = (data.mortonIndex[i] >> (3 * depth)) & 7;
+
+                    nodeIndex = createNode(childX, childY, childZ, size, size, size, data);
+                    std::cout << nodeIndex << " " << first << " " << last << " " << size << " " << childX << " "
+                              << childY << " " << childZ << " " << depth << " " << std::endl;
+                }
 
                 rootIndex = nodeIndex;
-                std::cout << nodeIndex << " " << first << " " << last << " " << size << " " << x << " "
-                          << y << " " << z << " " << depth << " " << std::endl;
-
-//                morton3DInverse(data.mortonIndex[first], x, y ,z);
-//                std ::cout <<x <<" " << y <<" "<< z << " ";
-//                morton3DInverse(data.mortonIndex[last - 1], x, y ,z);
-//                std ::cout <<x <<" " << y <<" "<< z << std::endl;
             }
             first = last;
         }
