@@ -21,7 +21,7 @@ private:
 
     int generateNode(SimulationData &data, int numParticles);
 
-    void nodeCOMInit(SimulationData &data);
+    void nodeCOMInit(SimulationData &data, int numParticles);
 
 public:
     int buildTree(SimulationData &data, int numParticles);

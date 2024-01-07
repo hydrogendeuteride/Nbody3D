@@ -72,44 +72,44 @@ static constexpr void morton3DInverse(uint64_t code, float &x, float &y, float &
     z = static_cast<float>(zz) - 32768.0f;
 }
 
-static int findJustBigNumber(const uint64_t *arr, int left, int right, uint64_t number)
+static int findJustBigNumber(const uint64_t *arr, int n, uint64_t target)
 {
-    while (left <= right)
+    int low = 0, high = n - 1, result = -1;
+    while (low <= high)
     {
-        int mid = left + (right - left) / 2;
+        int mid = low + (high - low) / 2;
 
-        if (arr[mid] >= number)
+        if (arr[mid] >= target)
         {
-            if (arr[mid] == number)
-                return mid;
-            right = mid - 1;
+            result = mid;
+            high = mid - 1;
         }
         else
         {
-            left = mid + 1;
+            low = mid + 1;
         }
     }
-    return left < right ? left : -1;
+    return result;
 }
 
-static int findJustSmallNumber(const uint64_t *arr, int left, int right, uint64_t number)
+static int findJustSmallNumber(const uint64_t *arr, int n, uint64_t target)
 {
-    while (left <= right)
+    int low = 0, high = n - 1, result = -1;
+    while (low <= high)
     {
-        int mid = left + (right - left) / 2;
+        int mid = low + (high - low) / 2;
 
-        if (arr[mid] <= number)
+        if (arr[mid] <= target)
         {
-            if (arr[mid] == number)
-                return mid;
-            left = mid + 1;
+            result = mid;
+            low = mid + 1;
         }
         else
         {
-            right = mid - 1;
+            high = mid - 1;
         }
     }
-    return right >= 0 ? right : -1;
+    return result;
 }
 
 bool Octree::noChildren(const SimulationData &data, int nodeIndex)
@@ -161,11 +161,11 @@ int Octree::generateNode(SimulationData &data, int numParticles)    //needs sort
                 uint64_t prevMorton = UINT64_MAX;
                 for (int i = first; i < last; ++i)
                 {
-                    int childIndex = (data.mortonIndex[i] >> (3 * depth)) & 7;
+                    int childIndex = (int) (data.mortonIndex[i] >> (3 * depth)) & 7;
 
-                    float childX = x + (childIndex & 1) * size;
-                    float childY = y + ((childIndex >> 1) & 1) * size;
-                    float childZ = z + ((childIndex >> 2) & 1) * size;
+                    float childX = x + (float) (childIndex & 1) * size;
+                    float childY = y + (float) ((childIndex >> 1) & 1) * size;
+                    float childZ = z + (float) ((childIndex >> 2) & 1) * size;
 
                     if (((data.mortonIndex[i] >> (3 * depth)) & 7) == prevMorton)
                         continue;
@@ -213,9 +213,16 @@ int Octree::createNode(float x, float y, float z, float width, float height, flo
     return index;
 }
 
-void Octree::nodeCOMInit(SimulationData &data)
+bool isParticleInNode1(float pX, float pY, float pZ, float nX, float nY, float nZ, float nW, float nH, float nD)
 {
-    for (int i = 0; i < MAX_NODES; ++i) //Can be parallelized
+    return pX >= nX && pX <= nX + nW &&
+           pY >= nY && pY <= nY + nH &&
+           pZ >= nZ && pZ <= nZ + nD;
+}
+
+void Octree::nodeCOMInit(SimulationData &data, int numParticles)
+{
+    for (int i = 0; i < nodeCount; ++i) //Can be parallelized
     {
         float x = data.nodeX[i];
         float y = data.nodeY[i];
@@ -223,15 +230,23 @@ void Octree::nodeCOMInit(SimulationData &data)
 
         float size = data.nodeWidth[i];
 
+        std::cout << std::endl;
+        std::cout << x << " " << y << " " << z << " " << size << std::endl;
+
         uint64_t first = morton3D(x, y, z);
         uint64_t last = morton3D(x + size, y + size, z + size);
 
-        int f = findJustBigNumber(data.mortonIndex, 0, MAX_PARTICLES, first);
-        int l = findJustSmallNumber(data.mortonIndex, 0, MAX_PARTICLES, last);
+        int f = findJustBigNumber(data.mortonIndex, numParticles, first);
+        int l = findJustSmallNumber(data.mortonIndex, numParticles, last);
+
+        std::cout << first << " " << last << " " << f << " " << l << std::endl;
 
         for (int j = f; j <= l; ++j)
         {
-            if (data.particleMass[j] > 0)
+            if (data.particleMass[j] > 0
+            && isParticleInNode1(data.particleX[j], data.particleY[j], data.particleZ[j],
+                                data.nodeX[i], data.nodeY[i], data.nodeZ[i],
+                                data.nodeWidth[i], data.nodeHeight[i], data.nodeDepth[i]))
             {
                 float totalMassBeforeInsert = data.nodeTotalMass[i];
                 float newParticleMass = data.particleMass[j];
@@ -264,8 +279,15 @@ int Octree::buildTree(SimulationData &data, int numParticles)
 
     std::sort(data.mortonIndex, data.mortonIndex + numParticles);
 
+    for (int i = 0; i < numParticles; ++i)
+    {
+        std::cout << data.particleX[data.idxSorted[i]] << " " << data.particleY[data.idxSorted[i]] <<
+        " " << data.particleZ[data.idxSorted[i]] << " " << data.mortonIndex[i] << " \n";
+    }
+    std::cout << std::endl;
+
     int root = generateNode(data, numParticles);
-    nodeCOMInit(data);
+    nodeCOMInit(data, numParticles);
 
     return root;
 }
