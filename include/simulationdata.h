@@ -22,7 +22,6 @@ struct SimulationData
     float *nodeHeight;
     float *nodeDepth;
 
-    int *nodeParticleIndex;
     int (*nodeChildren)[OCT_CHILD];
 
     float *nodeTotalMass;
@@ -45,6 +44,10 @@ struct SimulationData
 
     unsigned int *idxSorted;
     uint64_t *mortonIndex;
+
+    uint64_t *nodeMortonIdx;
+    uint64_t *nodeIdxSorted;
+    unsigned int *depth;
 };
 
 
