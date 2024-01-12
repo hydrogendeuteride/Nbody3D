@@ -11,7 +11,7 @@ find_package(Eigen3 3.3 NO_MODULE)
 include_directories(${GLFW_INCLUDE_DIRS})
 link_libraries(${GLFW_LIBRARY_DIRS})
 
-include_directories(include)
+include_directories(GLAD/include include)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -24,4 +24,5 @@ add_executable(NBody3D main.cpp
         src/octree.cpp
         src/bhtree.cpp
         src/shader.cpp
-        src/sphere.cpp)
+        src/sphere.cpp
+        GLAD/src/glad.c)
