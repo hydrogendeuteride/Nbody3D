@@ -93,7 +93,11 @@ void Sphere::draw(const Shader &shader, const glm::vec3& diffuse, const glm::vec
     shader.setVec3("specular", specular);
     shader.setVec3("ambient", ambient);
 
+    shader.setMat4("model", worldMatrix);
+
     shader.use();
+
+    glBindVertexArray(VAO);
 
     switch (drawType)
     {

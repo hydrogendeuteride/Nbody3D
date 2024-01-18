@@ -49,6 +49,7 @@ public:
         this->worldUp = up;
         this->yaw = yaw;
         this->pitch = pitch;
+        this->roll = roll;
         updateCameraVectors();
     }
 
