@@ -1,11 +1,8 @@
 #ifndef NBODY3D_RENDER_H
 #define NBODY3D_RENDER_H
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "camera.h"
 #include "shader.h"
+#include "camera.h"
 #include "sphere.h"
 #include "octree.h"
 #include "bhtree.h"
