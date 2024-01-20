@@ -124,6 +124,8 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
         sphereShader.setMat4("projection", projection);
         sphereShader.setMat4("view", view);
 
+        sphereShader.setVec3("viewPos", camera.position);
+
         processInput(window);
 
         tree.buildTree(data);
