@@ -6,17 +6,19 @@
 #include "sphere.h"
 #include "octree.h"
 #include "bhtree.h"
+#include "light.h"
 
 class Render
 {
 public:
     Render(int scrWidth, int scrHeight);
 
-    void cameraSetup(Camera& worldCamera);
+    void cameraSetup(Camera &worldCamera);
 
-    void sphereSetup(int subdivision, float size);
+    void sphereSetup(int subdivision, float size, int number);
+    void lightSetup(Light& light);
 
-    void draw(Shader& sphereShader, SimulationData& data, Octree& tree);
+    void draw(Shader &sphereShader, SimulationData &data, Octree &tree);
 
 private:
     void frameBufferSizeCallback(int width, int height);
@@ -25,12 +27,12 @@ private:
 
     void mouseCallback(double xPosIn, double YPosIn);
 
-    void processInput(GLFWwindow* pWindow);
+    void processInput(GLFWwindow *pWindow);
 
-    GLFWwindow * window;
+    GLFWwindow *window;
 
     std::vector<Sphere> spheres;
-    Sphere *lightSource;
+    Light *lightSource;
 
     Camera camera;
 

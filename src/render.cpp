@@ -10,11 +10,11 @@ Render::Render(int scrWidth, int scrHeight)
         std::cerr << "Failed to initialize GLFW" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(scrWidth, scrHeight, "NBodySim", nullptr, nullptr);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "NBodySim", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
 
     if (window == nullptr)
@@ -55,9 +55,15 @@ void Render::cameraSetup(Camera &worldCamera)
     this->camera = worldCamera;
 }
 
-void Render::sphereSetup(int subdivision, float size)
+void Render::sphereSetup(int subdivision, float size, int number)
 {
+    for (int i = 0; i < number; ++i)
+        spheres.emplace_back(subdivision, size);
+}
 
+void Render::lightSetup(Light &light)
+{
+    this->lightSource = &light;
 }
 
 void Render::frameBufferSizeCallback(int width, int height)
@@ -131,6 +137,8 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
         sphereShader.setMat4("view", view);
 
         sphereShader.setVec3("viewPos", camera.position);
+
+        lightSource->draw(sphereShader);
 
         processInput(window);
 

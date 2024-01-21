@@ -1,6 +1,7 @@
 #include <iostream>
 #include "octree.h"
 #include "bhtree.h"
+#include "render.h"
 
 float nodeX[MAX_NODES];
 float nodeY[MAX_NODES];
@@ -140,14 +141,18 @@ int main()
 
     Octree tree;
 
-    tree.buildTree(data);
+    Render render(1920, 1080);
 
-    printNode(0);
-    std::cout<<std::endl;
+    Shader shader("../shader/shader.vert", "../shader/shader.frag");
 
-    updateAllParticles(0.98f, 0.0f, data);
-    tree.buildTree(data);
-    printNode(0);
+    Light light(glm::vec3 (1.0f, 1.0f, 1.0f), glm::vec3 (1.0f, 1.0f, 1.0f),
+                glm::vec3 (1.0f, 1.0f, 1.0f), glm::vec3 (1.0f, 1.0f, 1.0f));
+
+    render.lightSetup(light);
+
+    render.sphereSetup(16, 1.0f, 17);
+    //problem in sphere generation
+    render.draw(shader, data, tree);
 
     return 0;
 }
