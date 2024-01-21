@@ -55,6 +55,11 @@ void Render::cameraSetup(Camera &worldCamera)
     this->camera = worldCamera;
 }
 
+void Render::sphereSetup(int subdivision, float size)
+{
+
+}
+
 void Render::frameBufferSizeCallback(int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -106,6 +111,7 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
     glm::vec3 ambient(0.1f, 0.1f, 0.1f);
     glm::vec3 diffuse(0.8f, 0.7f, 0.6f);
     glm::vec3 specular(1.0f, 1.0f, 1.0f);
+
     float shininess = 32.0f;
 
     while (!glfwWindowShouldClose(window))
@@ -138,7 +144,8 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
                                                               data.particleY[i],
                                                               data.particleZ[i]));
 
-            spheres[i].draw(sphereShader, diffuse, specular, ambient);
+            spheres[i].draw(sphereShader, diffuse, specular, ambient,
+                            glm::vec3 (0.0f, 0.0f, 0.0f));
         }
 
         glfwSwapBuffers(window);

@@ -16,7 +16,7 @@ public:
 
     enum class DrawType { POINTS, LINES, TRIANGLES, PATCHES };
     void draw(const Shader& shader, const glm::vec3& diffuse, const glm::vec3& specular, const glm::vec3& ambient,
-              const DrawType drawType = DrawType::TRIANGLES);
+              const glm::vec3& emit, DrawType drawType = DrawType::TRIANGLES);
 
     glm::mat4 worldMatrix;
 private:

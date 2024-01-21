@@ -86,12 +86,12 @@ void Sphere::buildSphere(int subdivision, float size)
 }
 
 void Sphere::draw(const Shader &shader, const glm::vec3& diffuse, const glm::vec3& specular,
-                  const glm::vec3& ambient, const Sphere::DrawType drawType)
+                  const glm::vec3& emit, const glm::vec3& ambient, const Sphere::DrawType drawType)
 {
     shader.setVec3("objDiff", diffuse);
     shader.setVec3("objSpec", specular);
     shader.setVec3("objAmbi", ambient);
-    shader.setVec3("objEmit", glm::vec3 (0.0f));
+    shader.setVec3("objEmit", emit);
 
     shader.setMat4("model", worldMatrix);
 

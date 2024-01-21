@@ -26,6 +26,7 @@ add_executable(NBody3D main.cpp
         src/shader.cpp
         src/sphere.cpp
         src/render.cpp
-        glad/src/glad.c)
+        glad/src/glad.c
+)
 
 target_link_libraries(${PROJECT_NAME} glfw ${CMAKE_DL_LIBS})

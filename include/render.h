@@ -14,6 +14,8 @@ public:
 
     void cameraSetup(Camera& worldCamera);
 
+    void sphereSetup(int subdivision, float size);
+
     void draw(Shader& sphereShader, SimulationData& data, Octree& tree);
 
 private:
@@ -28,6 +30,7 @@ private:
     GLFWwindow * window;
 
     std::vector<Sphere> spheres;
+    Sphere *lightSource;
 
     Camera camera;
 
@@ -40,7 +43,6 @@ private:
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
-
 };
 
 #endif //NBODY3D_RENDER_H
