@@ -14,7 +14,7 @@ Sphere::Sphere(int subdivision, float size)
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), static_cast<void *>(vertices.data()),
                  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof (float), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof (int), indices.data(), GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) nullptr);
     glEnableVertexAttribArray(0);
@@ -37,14 +37,14 @@ void Sphere::buildSphere(int subdivision, float size)
 
     for (int i = 0; i < pointsPerRow; ++i)
     {
-        a2 = DEG2RAD * (45.0f - 90.0f * (float) i / (float) (pointsPerRow - 1));
+        a2 = DEG2RAD * (90.0f - 180.0f * (float) i / (float) (pointsPerRow - 1));
         n2[0] = -std::sin(a2);
         n2[1] = std::cos(a2);
         n2[2] = 0;
 
         for (int j = 0; j < pointsPerRow; ++j)
         {
-            a1 = DEG2RAD * (-45.0f + 90.0f * (float) j / (float) (pointsPerRow - 1));
+            a1 = DEG2RAD * (360.0f * (float) j / (float) (pointsPerRow - 1));
             n1[0] = -std::sin(a1);
             n1[1] = 0;
             n1[2] = -std::cos(a1);
@@ -102,16 +102,16 @@ void Sphere::draw(const Shader &shader, const glm::vec3& diffuse, const glm::vec
     switch (drawType)
     {
         case DrawType::POINTS:
-            glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_SHORT, nullptr);
+            glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, nullptr);
             break;
         case DrawType::LINES:
-            glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_SHORT, nullptr);
+            glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, nullptr);
             break;
         case DrawType::TRIANGLES:
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_SHORT, nullptr);
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
             break;
         case DrawType::PATCHES:
-            glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_SHORT, nullptr);
+            glDrawElements(GL_PATCHES, indices.size(), GL_UNSIGNED_INT, nullptr);
             break;
     }
 }

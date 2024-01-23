@@ -23,7 +23,7 @@ private:
     void buildSphere(int subdivision, float size);
 
     std::vector<float> vertices;
-    std::vector<unsigned short> indices;
+    std::vector<unsigned int> indices;
 
     unsigned int VAO, VBO, EBO;
 };

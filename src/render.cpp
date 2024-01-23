@@ -110,6 +110,10 @@ void Render::processInput(GLFWwindow *pWindow)
         camera.processKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera.processKeyboard(UP, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.processKeyboard(DOWN, deltaTime);
 }
 
 void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
@@ -126,7 +130,7 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT,
@@ -155,7 +159,6 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
             spheres[i].draw(sphereShader, diffuse, specular, ambient,
                             glm::vec3 (0.0f, 0.0f, 0.0f));
         }
-
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
