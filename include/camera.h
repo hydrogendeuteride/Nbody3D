@@ -16,7 +16,9 @@ enum CameraMovement
     LEFT,
     RIGHT,
     UP,
-    DOWN
+    DOWN,
+    ROLL_LEFT,
+    ROLL_RIGHT
 };
 
 constexpr float YAW = -90.0f;
@@ -43,7 +45,7 @@ public:
 
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
            glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, float roll = ROLL)
-            : front(glm::vec3(0.0f, 1.0f, 0.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM)
+            : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVITY), zoom(ZOOM)
     {
         this->position = position;
         this->worldUp = up;
@@ -73,6 +75,13 @@ public:
             position += up * velocity;
         if(direction==DOWN)
             position -= up * velocity;
+
+        if(direction==ROLL_LEFT)
+            roll -= 57.3f * deltaTime;
+        if(direction==ROLL_RIGHT)
+            roll += 57.3f * deltaTime;
+
+        updateCameraVectors();
     }
 
     void processMouseMovement(float xOffset, float yOffset)
@@ -96,19 +105,22 @@ public:
     }
 
 private:
+    glm::quat orientation;
+
     void updateCameraVectors()
     {
         glm::quat qYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::quat qPitch = glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
         glm::quat qRoll = glm::angleAxis(glm::radians(roll), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        glm::quat orientation = qYaw * qPitch * qRoll;
+        orientation = qYaw * qPitch * qRoll;
         orientation = glm::normalize(orientation);
 
         front = glm::rotate(orientation, glm::vec3(0.0f, 0.0f, -1.0f));
 
-        right = glm::normalize(glm::cross(front, worldUp));
-        up = glm::normalize(glm::cross(right, front));
+        up = glm::rotate(orientation, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        right = glm::normalize(glm::cross(front, up));
     }
 };
 

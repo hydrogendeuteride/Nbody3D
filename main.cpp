@@ -41,8 +41,8 @@ void printNode(int nodeIndex, int depth = 0)
     }
 
     std::cout << "Node [" << nodeX[nodeIndex] << ", " << nodeY[nodeIndex] << ", " << nodeZ[nodeIndex] << ", "
-              << nodeWidth[nodeIndex] << ", " << nodeHeight[nodeIndex] << ", " << nodeDepth[nodeIndex] << ", "
-              << nodeTotalMass[nodeIndex] << "]";
+              << nodeWidth[nodeIndex] << ", " << nodeTotalMass[nodeIndex] << ", ("
+              << nodeCOM_X[nodeIndex] << ", " << nodeCOM_Y[nodeIndex] << ", " << nodeCOM_Z[nodeIndex] << ") ]";
 
     if (nodeParticleIndex[nodeIndex] != NULL_INDEX)
     {
@@ -67,7 +67,22 @@ int main()
     particleX[0] = 0.0f;
     particleY[0] = 0.0f;
     particleZ[0] = 0.0f;
-    particleMass[0] = 1.0f;
+    particleMass[0] = 10.0f;
+
+    particleX[1] = 0.0f;
+    particleY[1] = -5.0f;
+    particleZ[1] = 0.0f;
+    particleMass[1] = 1.0f;
+
+    particleX[2] = 0.0f;
+    particleY[2] = 5.0f;
+    particleZ[2] = 5.0f;
+    particleMass[2] = 1.0f;
+
+    particleX[3] = 0.0f;
+    particleY[3] = 0.0f;
+    particleZ[3] = 1.0f;
+    particleMass[3] = 1.0f;
 
     SimulationData data{};
 
@@ -104,18 +119,20 @@ int main()
 
     Shader shader("../shader/shader.vert", "../shader/shader.frag");
 
-    Camera camera(glm::vec3(0.0f, 0.0f, -3.0f));
+    Camera camera(glm::vec3(-30.0f, 0.0f, 0.0f));
 
-    Light light(glm::vec3 (1000.0f, 1.0f, 1.0f), glm::vec3 (1.0f, 1.0f, 1.0f),
+    Light light(glm::vec3 (-1000.0f, 1.0f, 1.0f), glm::vec3 (1.0f, 1.0f, 1.0f),
                 glm::vec3 (0.5f, 0.5f, 0.5f), glm::vec3 (0.2f, 0.2f, 0.2f));
 
     render.lightSetup(light);
 
-    render.sphereSetup(6, 0.5f, 1);
+    render.sphereSetup(8, 0.5f, 4);
 
     render.cameraSetup(camera);
 
     render.draw(shader, data, tree);
+
+    printNode(0);
 
     return 0;
 }

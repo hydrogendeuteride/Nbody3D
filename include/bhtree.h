@@ -19,7 +19,7 @@ class Gravitational
 public:
     vec operator()(const float rootMass, const float distX, const float distY, const float distZ)
     {
-        float dist = std::sqrt(distX * distX + distY * distY) + distZ * distZ;
+        float dist = std::sqrt(distX * distX + distY * distY + distZ * distZ);
 
         float tmp = -((1.0f * rootMass) / std::pow((dist * dist) + (0.1f * 0.1f), 1.5f));
         return {tmp * distX, tmp * distY, tmp * distZ};

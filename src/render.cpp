@@ -128,16 +128,21 @@ void Render::processInput(GLFWwindow *pWindow)
         camera.processKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         camera.processKeyboard(UP, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         camera.processKeyboard(DOWN, deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera.processKeyboard(ROLL_LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera.processKeyboard(ROLL_RIGHT, deltaTime);
 }
 
 void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
 {
     glm::vec3 ambient(0.1f, 0.1f, 0.1f);
-    glm::vec3 diffuse(0.8f, 0.7f, 0.6f);
+    glm::vec3 diffuse(0.3f, 0.4f, 0.8f);
     glm::vec3 specular(1.0f, 1.0f, 1.0f);
 
     float shininess = 32.0f;
@@ -152,7 +157,7 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT,
-                                                0.1f, 100.0f);
+                                                0.1f, 60000.0f);
         glm::mat4 view = camera.getViewMatrix();
 
         sphereShader.setMat4("projection", projection);
@@ -165,7 +170,7 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
         processInput(window);
 
         tree.buildTree(data);
-        updateAllParticles(0.98f, deltaTime, data);
+        updateAllParticles(0.99f, deltaTime * .01f, data);
 
         for (size_t i = 0; i < spheres.size(); ++i)
         {
@@ -176,7 +181,11 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
 
             spheres[i].draw(sphereShader, diffuse, specular, ambient,
                             glm::vec3 (0.0f, 0.0f, 0.0f));
+
+            std::cout << data.particleX[i] <<" "<< data.particleY[i] <<" "<< data.particleZ[i] << "\n";
         }
+        std::cout << "\n";
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

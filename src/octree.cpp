@@ -210,7 +210,7 @@ void Octree::buildTree(const SimulationData &data)
         int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);
         if (data.particleMass[sortedParticleIndex] > 0)
         {
-            insertParticleToNode(rootNodeIndex, sortedParticleIndex, 2, data);
+            insertParticleToNode(rootNodeIndex, sortedParticleIndex, 100, data);
         }
     }
 }

@@ -96,6 +96,6 @@ void updateAllParticles(float damping, float dt, const SimulationData &data)
 #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < MAX_PARTICLES; ++i)
     {
-        boundaryDetection(i, 1.0f, data);
+        //boundaryDetection(i, 1.0f, data);
     }
 }
