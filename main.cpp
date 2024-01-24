@@ -106,12 +106,12 @@ int main()
 
     Camera camera(glm::vec3(0.0f, 0.0f, -3.0f));
 
-    Light light(glm::vec3 (1.0f, 1.0f, 1.0f), glm::vec3 (1.0f, 1.0f, 1.0f),
+    Light light(glm::vec3 (1000.0f, 1.0f, 1.0f), glm::vec3 (1.0f, 1.0f, 1.0f),
                 glm::vec3 (0.5f, 0.5f, 0.5f), glm::vec3 (0.2f, 0.2f, 0.2f));
 
     render.lightSetup(light);
 
-    render.sphereSetup(6, 0.1f, 1);
+    render.sphereSetup(6, 0.5f, 1);
 
     render.cameraSetup(camera);
 

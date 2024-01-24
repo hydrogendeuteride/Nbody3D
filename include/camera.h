@@ -71,7 +71,7 @@ public:
             position += right * velocity;
         if(direction==UP)
             position += up * velocity;
-        if(direction==FORWARD)
+        if(direction==DOWN)
             position -= up * velocity;
     }
 

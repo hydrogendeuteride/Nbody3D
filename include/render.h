@@ -25,7 +25,9 @@ private:
 
     void scrollCallback(float xOffset, float yOffset);
 
-    void mouseCallback(double xPosIn, double YPosIn);
+    void mouseMovementCallback(double xPosIn, double YPosIn);
+
+    void mouseButtonCallback(int button, int action, int mods);
 
     void processInput(GLFWwindow *pWindow);
 
@@ -45,6 +47,9 @@ private:
 
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
+
+    glm::vec2 lastMousePosition;
+    bool isDragging = false;
 };
 
 #endif //NBODY3D_RENDER_H

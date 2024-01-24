@@ -38,7 +38,12 @@ Render::Render(int scrWidth, int scrHeight)
 
     glfwSetCursorPosCallback(window, [](GLFWwindow *w, double xOffset, double yOffset){
         auto *win = static_cast<Render *>(glfwGetWindowUserPointer(w));
-        win ->mouseCallback(xOffset, yOffset);
+        win ->mouseMovementCallback(xOffset, yOffset);
+    });
+
+    glfwSetMouseButtonCallback(window, [](GLFWwindow *w, int button, int action, int mods) {
+        auto *win = static_cast<Render*>(glfwGetWindowUserPointer(w));
+        win->mouseButtonCallback(button, action, mods);
     });
 
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
@@ -76,25 +81,38 @@ void Render::scrollCallback(float xOffset, float yOffset)
     camera.processMouseScroll(static_cast<float>(yOffset));
 }
 
-void Render::mouseCallback(double xPosIn, double yPosIn)
+void Render::mouseButtonCallback(int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            isDragging = true;
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
+            lastMousePosition = glm::vec2(mouseX, mouseY);
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            isDragging = false;
+        }
+    }
+}
+
+void Render::mouseMovementCallback(double xPosIn, double yPosIn)
 {
     float xpos = static_cast<float>(xPosIn);
     float ypos = static_cast<float>(yPosIn);
 
-    if (firstMouse)
+    if (isDragging)
     {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
+        glm::vec2 currentMousePosition = glm::vec2(xpos, ypos);
+        glm::vec2 mouseDelta = currentMousePosition - lastMousePosition;
+
+        camera.processMouseMovement(mouseDelta.x, mouseDelta.y);
+
+        lastMousePosition = currentMousePosition;
     }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.processMouseMovement(xoffset, yoffset);
 }
 
 void Render::processInput(GLFWwindow *pWindow)
