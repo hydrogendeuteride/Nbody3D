@@ -67,22 +67,22 @@ int main()
     particleX[0] = 0.0f;
     particleY[0] = 0.0f;
     particleZ[0] = 0.0f;
-    particleMass[0] = 10.0f;
+    particleMass[0] = 10000.0f;
 
     particleX[1] = 0.0f;
     particleY[1] = -5.0f;
     particleZ[1] = 0.0f;
     particleMass[1] = 1.0f;
 
-    particleX[2] = 0.0f;
-    particleY[2] = 5.0f;
-    particleZ[2] = 5.0f;
-    particleMass[2] = 1.0f;
-
-    particleX[3] = 0.0f;
-    particleY[3] = 0.0f;
-    particleZ[3] = 1.0f;
-    particleMass[3] = 1.0f;
+//    particleX[2] = 0.0f;
+//    particleY[2] = 5.0f;
+//    particleZ[2] = 5.0f;
+//    particleMass[2] = 1.0f;
+//
+//    particleX[3] = 0.0f;
+//    particleY[3] = 0.0f;
+//    particleZ[3] = 1.0f;
+//    particleMass[3] = 1.0f;
 
     SimulationData data{};
 
@@ -126,7 +126,7 @@ int main()
 
     render.lightSetup(light);
 
-    render.sphereSetup(8, 0.5f, 4);
+    render.sphereSetup(8, 0.5f, 2);
 
     render.cameraSetup(camera);
 

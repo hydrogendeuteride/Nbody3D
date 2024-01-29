@@ -9,6 +9,17 @@ bool isParticleInNode(float pX, float pY, float pZ, float nX, float nY, float nZ
            pZ >= nZ && pZ <= nZ + nD;
 }
 
+bool noChildren(const SimulationData &data, int nodeIndex)
+{
+    for (int i = 0; i < OCT_CHILD; ++i)
+    {
+        if (data.nodeChildren[nodeIndex][i] != NULL_INDEX)
+            return false;
+    }
+
+    return true;
+}
+
 void netAcceleration(int particleIdx, const SimulationData &data)
 {
     std::stack<int> stack;
@@ -27,7 +38,7 @@ void netAcceleration(int particleIdx, const SimulationData &data)
         float dist = std::sqrt(distX * distX + distY * distY + distZ * distZ);
 
         // Check if the current node is sufficiently far away or a leaf node
-        if (data.nodeWidth[top] / dist <= THETA || data.nodeChildren[top][0] == NULL_INDEX)
+        if (data.nodeWidth[top] / dist <= THETA || noChildren(data, top))
         {
             // Ensure the particle is not in the current node
             if (!isParticleInNode(data.particleX[particleIdx], data.particleY[particleIdx], data.particleZ[particleIdx],
@@ -97,5 +108,6 @@ void updateAllParticles(float damping, float dt, const SimulationData &data)
     for (int i = 0; i < MAX_PARTICLES; ++i)
     {
         //boundaryDetection(i, 1.0f, data);
+        //todo: fix boundarydetection error(minimum is not 0)
     }
 }

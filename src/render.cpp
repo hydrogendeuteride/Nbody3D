@@ -182,7 +182,7 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
             spheres[i].draw(sphereShader, diffuse, specular, ambient,
                             glm::vec3 (0.0f, 0.0f, 0.0f));
 
-            std::cout << data.particleX[i] <<" "<< data.particleY[i] <<" "<< data.particleZ[i] << "\n";
+            std::cout << data.accX[i] <<" "<< data.accY[i] <<" "<< data.accZ[i] << "\n";
         }
         std::cout << "\n";
 

@@ -15,9 +15,9 @@ void Velocity_Verlet(Acc acc, const float damping, const float dt, const Simulat
     {
         unsigned int particleIndex = data.idxSorted[i];
 
-        data.particleX[i] += data.particleVelX[particleIndex] * dt + 0.5f * data.accX[particleIndex] * dt * dt;
-        data.particleY[i] += data.particleVelY[particleIndex] * dt + 0.5f * data.accY[particleIndex] * dt * dt;
-        data.particleZ[i] += data.particleVelZ[particleIndex] * dt + 0.5f * data.accZ[particleIndex] * dt * dt;
+        data.particleX[particleIndex] += data.particleVelX[particleIndex] * dt + 0.5f * data.accX[particleIndex] * dt * dt;
+        data.particleY[particleIndex] += data.particleVelY[particleIndex] * dt + 0.5f * data.accY[particleIndex] * dt * dt;
+        data.particleZ[particleIndex] += data.particleVelZ[particleIndex] * dt + 0.5f * data.accZ[particleIndex] * dt * dt;
     }
 
 #pragma omp parallel for schedule(dynamic)

@@ -7,6 +7,8 @@
 
 bool isParticleInNode(float pX, float pY, float pZ, float nX, float nY, float nZ, float nW, float nH, float nD);
 
+bool noChildren(const SimulationData &data, int nodeIndex);
+
 struct vec
 {
     float x;
@@ -21,7 +23,7 @@ public:
     {
         float dist = std::sqrt(distX * distX + distY * distY + distZ * distZ);
 
-        float tmp = -((1.0f * rootMass) / std::pow((dist * dist) + (0.1f * 0.1f), 1.5f));
+        float tmp = -((1.0f * rootMass) / std::pow((dist * dist) + (0.5f * 0.5f), 1.5f));
         return {tmp * distX, tmp * distY, tmp * distZ};
     }
 };
