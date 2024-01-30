@@ -1,26 +1,12 @@
 #ifndef NBODY3D_SIMULATIONDATA_H
 #define NBODY3D_SIMULATIONDATA_H
 
+#include <cstdint>
+
 constexpr unsigned int OCT_CHILD = 8;
 
-struct SimulationData
+struct ParticleData
 {
-    float *nodeX;
-    float *nodeY;
-    float *nodeZ;
-
-    float *nodeWidth;
-    float *nodeHeight;
-    float *nodeDepth;
-
-    int *nodeParticleIndex;
-    int (*nodeChildren)[OCT_CHILD];
-
-    float *nodeTotalMass;
-    float *nodeCOM_X;
-    float *nodeCOM_Y;
-    float *nodeCOM_Z;
-
     float *particleX;
     float *particleY;
     float *particleZ;
@@ -34,7 +20,26 @@ struct SimulationData
     float *accY;
     float *accZ;
 
-    unsigned int *idxSorted;
+    unsigned int *idxSorted;    //store morton order sorted index of particle
+    uint64_t *mortonCode;       //store sorted morton code
+};
+
+struct NodeData
+{
+    unsigned int (*internalNodeChildren)[OCT_CHILD];
+
+    float *nodeTotalMass;
+    float *nodeCOM_X;
+    float *nodeCOM_Y;
+    float *nodeCOM_Z;
+
+    uint64_t *internalNodeMortonCode;
+    uint64_t *leafNodeMortonCode;
+
+    unsigned int *leafNodes;
+    unsigned int *internalNodes;
+
+    int *nodeDepth;
 };
 
 constexpr int NULL_INDEX = -1;

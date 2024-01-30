@@ -28,6 +28,7 @@ add_executable(NBody3D main.cpp
         src/render.cpp
         glad/src/glad.c
         src/light.cpp
+        src/svotree.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} glfw ${CMAKE_DL_LIBS})
