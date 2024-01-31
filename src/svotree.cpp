@@ -145,9 +145,9 @@ int SVOctree::generateNode(ParticleData &data, NodeData &nodeData, int numPartic
         int commonPrefixLength = __builtin_clzll(firstCode ^ lastCode);
         int depth = (64 - commonPrefixLength) / 3;
 
-        uint64_t adjustedLastCode = (lastCode & (~0ULL << (64 - commonPrefixLength))) |
-                (1ULL << (3 * depth));
-        uint64_t nodeMortonCode = adjustedLastCode >> (3 * (depth - 1));
+        uint64_t adjustedLastCode = (lastCode & (~0ULL << (3 * depth)));
+        uint64_t nodeMortonCode = adjustedLastCode >> (3 * (depth)) |
+                                  (1ULL << ((3 * depth) + 1));
 
     }
 }
