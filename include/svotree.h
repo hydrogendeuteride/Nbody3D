@@ -10,6 +10,11 @@ struct pair
     int y;
 };
 
+struct OctreeSplit
+{
+    int split[8];
+};
+
 class SVOctree
 {
 private:

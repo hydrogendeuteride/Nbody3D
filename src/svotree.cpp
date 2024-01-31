@@ -1,6 +1,7 @@
 #include "svotree.h"
 #include <stack>
 #include <numeric>
+#include <cmath>
 
 static constexpr uint64_t expandBits(uint64_t v)
 {
@@ -66,7 +67,7 @@ pair SVOctree::determineRange(ParticleData &data, int numParticles, int idx)
     auto delta = [&](int i, int j) -> int {
         if (j < 0 || j > numParticles - 1)
             return -1;
-        return __builtin_clz(data.mortonCode[i] ^ data.mortonCode[j]) / 3; //for 64 bit, 64 -1 = 63
+        return __builtin_clzll(data.mortonCode[i] ^ data.mortonCode[j]) / 3; //for 64 bit, 64 -1 = 63
     };
 
     int d = delta(idx, idx + 1) > delta(idx, idx - 1) ? 1 : -1;
@@ -100,7 +101,7 @@ int SVOctree::findSplit(ParticleData &data, int first, int last)
     if (firstCode == lastCode)
         return (first + last) >> 1;
 
-    int commonPrefix = __builtin_clz(firstCode ^ lastCode);
+    int commonPrefix = __builtin_clzll(firstCode ^ lastCode);
 
     int split = first;
     int step = last - first;
@@ -113,7 +114,7 @@ int SVOctree::findSplit(ParticleData &data, int first, int last)
         if (newSplit < last)
         {
             uint64_t splitCode = data.mortonCode[newSplit];
-            int splitPrefix = __builtin_clz(firstCode ^ splitCode);
+            int splitPrefix = __builtin_clzll(firstCode ^ splitCode);
             if (splitPrefix > commonPrefix)
                 split = newSplit;
         }
@@ -128,6 +129,7 @@ int SVOctree::generateNode(ParticleData &data, NodeData &nodeData, int numPartic
     for (int i = 0; i < numParticles; ++i)
     {
         nodeData.leafNodes[i] = data.idxSorted[i];
+        nodeData.leafNodeMortonCode[i] = data.mortonCode[i];
     }
 
     for (int i = 0; i < numParticles - 1; ++i)
@@ -137,8 +139,15 @@ int SVOctree::generateNode(ParticleData &data, NodeData &nodeData, int numPartic
         int first = range.x;
         int last = range.y;
 
-        int split = findSplit(data, first, last);
+        uint64_t firstCode = data.mortonCode[first];
+        uint64_t lastCode = data.mortonCode[last];
 
+        int commonPrefixLength = __builtin_clzll(firstCode ^ lastCode);
+        int depth = (64 - commonPrefixLength) / 3;
+
+        uint64_t adjustedLastCode = (lastCode & (~0ULL << (64 - commonPrefixLength))) |
+                (1ULL << (3 * depth));
+        uint64_t nodeMortonCode = adjustedLastCode >> (3 * (depth - 1));
 
     }
 }
