@@ -18,16 +18,16 @@ struct OctreeSplit
 class SVOctree
 {
 private:
-    int generateNode(ParticleData &data, NodeData &nodeData, int numParticles);
-
-    pair determineRange(ParticleData &data, int numParticles, int idx);
-
     int findSplit(ParticleData &data, int first, int last);
 
     void nodeChildrenInit(ParticleData &data);
 
 public:
     int buildTree(ParticleData &data, int numParticles);
+
+    int generateNode(ParticleData &data, NodeData &nodeData, int numParticles);
+
+    static pair determineRange(ParticleData &data, int numParticles, int idx);
 };
 
 

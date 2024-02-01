@@ -74,7 +74,7 @@ pair SVOctree::determineRange(ParticleData &data, int numParticles, int idx)
     int deltaMin = delta(idx, idx - d);
     int lmax = 2;
 
-    while (idx + lmax * d < numParticles && idx + lmax * d >= 0 &&
+    while ((idx + lmax * d < numParticles) && (idx + lmax * d >= 0) &&
            delta(idx, idx + lmax * d) > deltaMin)
     {
         lmax *= 2;
@@ -83,7 +83,7 @@ pair SVOctree::determineRange(ParticleData &data, int numParticles, int idx)
     int l = 0;
     for (int t = lmax / 2; t >= 1; t /= 2)
     {
-        if (idx + (l + t) * d < numParticles && idx + (l + t) * d >= 0 &&
+        if ((idx + (l + t) * d < numParticles) && (idx + (l + t) * d >= 0) &&
             delta(idx, idx + (l + t) * d) > deltaMin)
         {
             l += t;
