@@ -22,12 +22,14 @@ private:
 
     void nodeChildrenInit(ParticleData &data);
 
+    uint64_t currentMorton = 0;
+
 public:
     int buildTree(ParticleData &data, int numParticles);
 
     int generateNode(ParticleData &data, NodeData &nodeData, int numParticles);
 
-    static pair determineRange(ParticleData &data, int numParticles, int idx);
+    static pair determineRange(ParticleData &data, int numParticles, int idx, int depth);
 };
 
 

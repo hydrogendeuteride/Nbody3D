@@ -57,7 +57,7 @@ static constexpr void morton3DInverse(uint64_t code, float &x, float &y, float &
     z = static_cast<float>(zz) - 32768.0f;
 }
 
-pair SVOctree::determineRange(ParticleData &data, int numParticles, int idx)
+pair SVOctree::determineRange(ParticleData &data, int numParticles, int idx, int depth)
 {
     if (idx >= numParticles - 1)
     {
@@ -132,22 +132,17 @@ int SVOctree::generateNode(ParticleData &data, NodeData &nodeData, int numPartic
         nodeData.leafNodeMortonCode[i] = data.mortonCode[i];
     }
 
-    for (int i = 0; i < numParticles - 1; ++i)
+    for (int i = 0; i < numParticles; ++i)
     {
-        pair range = determineRange(data, numParticles, i);
+        unsigned int leafCount = nodeData.internalNodeMortonCode[i] - currentMorton;
+        while (leafCount > 0)
+        {
+            unsigned int power = 0;
 
-        int first = range.x;
-        int last = range.y;
+            if (leafCount >= 8)
+                power = std::floor(std::log(leafCount) / std::log(8));
 
-        uint64_t firstCode = data.mortonCode[first];
-        uint64_t lastCode = data.mortonCode[last];
-
-        int commonPrefixLength = __builtin_clzll(firstCode ^ lastCode);
-        int depth = (64 - commonPrefixLength) / 3;
-
-        uint64_t adjustedLastCode = (lastCode & (~0ULL << (3 * depth)));
-        uint64_t nodeMortonCode = adjustedLastCode >> (3 * (depth)) |
-                                  (1ULL << ((3 * depth) + 1));
-
+            
+        }
     }
 }
