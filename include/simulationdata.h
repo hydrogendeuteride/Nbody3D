@@ -1,6 +1,8 @@
 #ifndef NBODY3D_SIMULATIONDATA_H
 #define NBODY3D_SIMULATIONDATA_H
 
+#include <cstdint>
+
 constexpr unsigned int OCT_CHILD = 8;
 
 struct SimulationData
@@ -35,6 +37,8 @@ struct SimulationData
     float *accZ;
 
     unsigned int *idxSorted;
+
+    uint64_t *nodeMortonCode;
 };
 
 constexpr int NULL_INDEX = -1;

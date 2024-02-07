@@ -47,7 +47,7 @@ bool Octree::noChildren(const SimulationData &data, int nodeIndex)
     return true;
 }
 
-int Octree::createNode(float x, float y, float z, float width, float height, float depth,
+int Octree::createNode(float x, float y, float z, float size, uint64_t mortonCode,
                        const SimulationData &data)
 {
     int index;
@@ -58,9 +58,11 @@ int Octree::createNode(float x, float y, float z, float width, float height, flo
     data.nodeY[index] = y;
     data.nodeZ[index] = z;
 
-    data.nodeWidth[index] = width;
-    data.nodeHeight[index] = height;
-    data.nodeDepth[index] = depth;
+    data.nodeWidth[index] = size;
+    data.nodeHeight[index] = size;
+    data.nodeDepth[index] = size;
+
+    data.nodeMortonCode[index] = mortonCode;
 
     data.nodeParticleIndex[index] = NULL_INDEX;
     for (int i = 0; i < OCT_CHILD; i++)
@@ -76,6 +78,8 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth
     stack.push({nodeIndex, particleIndex, 0});
 
     int depth;
+
+    uint64_t mortonCode = 1;
 
     while (!stack.empty())
     {
@@ -130,8 +134,11 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth
                         float childX = data.nodeX[nodeIndex] + (childIndex & 1 ? halfWidth : 0);
                         float childY = data.nodeY[nodeIndex] + (childIndex & 2 ? halfHeight : 0);
                         float childZ = data.nodeZ[nodeIndex] + (childIndex & 4 ? halfDepth : 0);
+
+                        mortonCode = (mortonCode << 3 | childIndex);
+
                         data.nodeChildren[nodeIndex][childIndex] = createNode(childX, childY, childZ,
-                                                                              halfWidth, halfHeight, halfDepth,
+                                                                              halfWidth, mortonCode,
                                                                               data);
                     }
                     if (depth < maxDepth)
@@ -176,7 +183,7 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth
                 float childZ = data.nodeZ[nodeIndex] + (childIndex & 4 ? halfDepth : 0);
 
                 data.nodeChildren[nodeIndex][childIndex] = createNode(childX, childY, childZ,
-                                                                      halfWidth, halfHeight, halfDepth,
+                                                                      halfWidth, mortonCode,
                                                                       data);
             }
 
@@ -191,7 +198,7 @@ void Octree::buildTree(const SimulationData &data)
 {
     nodeCount = 0;
     int rootNodeIndex = createNode(-32768.0f, -32768.0f, -32768.0f,
-                                   65536.0f, 65536.0f, 65536.0f, data);
+                                   65536.0f, 1, data);
 
     unsigned int mortonIndex[MAX_PARTICLES];
 

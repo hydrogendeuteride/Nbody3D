@@ -10,7 +10,7 @@ private:
 
     static uint64_t  morton3D(float x, float y, float z);
 
-    int createNode(float x, float y, float z, float width, float height, float depth,
+    int createNode(float x, float y, float z, float size, uint64_t mortonCode,
                    const SimulationData &data);
 
     static bool noChildren(const SimulationData& data, int nodeIndex);

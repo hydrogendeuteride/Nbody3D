@@ -33,6 +33,8 @@ float accZ[MAX_PARTICLES];
 
 unsigned int idxSorted[MAX_PARTICLES];
 
+uint64_t nodeMortonCode[MAX_NODES];
+
 void printNode(int nodeIndex, int depth = 0)
 {
     for (int i = 0; i < depth; i++)
@@ -67,7 +69,7 @@ int main()
     particleX[0] = 0.0f;
     particleY[0] = 0.0f;
     particleZ[0] = 0.0f;
-    particleMass[0] = 10000.0f;
+    particleMass[0] = 1000.0f;
 
     particleX[1] = 0.0f;
     particleY[1] = -5.0f;
@@ -112,6 +114,8 @@ int main()
     data.accY = accY;
     data.accZ = accZ;
     data.idxSorted = idxSorted;
+
+    data.nodeMortonCode = nodeMortonCode;
 
     Octree tree;
 
