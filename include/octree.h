@@ -24,6 +24,8 @@ private:
 
     void insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth, const SimulationData &data);
 
+    void makeLeafNode(SimulationData& data);
+
     int nodeCount = 0;
 
 public:

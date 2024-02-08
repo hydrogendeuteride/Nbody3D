@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <stack>
 #include <numeric>
+#include <cmath>
 #include "octree.h"
 #include "omp.h"
 
@@ -190,6 +191,36 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth
             // Push the new particle to the appropriate child node
             if (depth < maxDepth)
                 stack.push({data.nodeChildren[nodeIndex][childIndex], particleIndex, ++depth});
+        }
+    }
+}
+
+void Octree::makeLeafNode(SimulationData& data)
+{
+    for (int i = 0; i < nodeCount; ++i)
+    {
+        if (noChildren(data, i))
+        {
+            int childIndex = 0;
+            int particleIdx = data.nodeParticleIndex[i];
+            float halfWidth = data.nodeWidth[i] / 2;
+
+            if (data.particleX[particleIdx] > data.nodeX[i] + halfWidth)
+                childIndex |= 1;
+
+            if (data.particleY[particleIdx] > data.nodeY[i] + halfWidth)
+                childIndex |= 2;
+
+            if (data.particleZ[particleIdx] > data.nodeZ[i] + halfWidth)
+                childIndex |= 4;
+
+            float leafX = std::floor(data.particleX[particleIdx]);
+            float leafY = std::floor(data.particleY[particleIdx]);
+            float leafZ = std::floor(data.particleZ[particleIdx]);
+
+            data.nodeChildren[i][childIndex] = createNode(leafX, leafY, leafZ,
+                                                          1.0f < data.nodeWidth[i] ? 1.0f : data.nodeWidth[i],
+                                                          morton3D(leafX, leafY, leafZ), data);
         }
     }
 }
