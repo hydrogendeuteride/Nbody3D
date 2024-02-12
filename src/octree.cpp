@@ -201,26 +201,20 @@ void Octree::makeLeafNode(SimulationData& data)
     {
         if (noChildren(data, i))
         {
-            int childIndex = 0;
             int particleIdx = data.nodeParticleIndex[i];
-            float halfWidth = data.nodeWidth[i] / 2;
 
-            if (data.particleX[particleIdx] > data.nodeX[i] + halfWidth)
-                childIndex |= 1;
+            float leafX = 1.0f < data.nodeWidth[i] ? std::floor(data.nodeX[i]) : data.nodeX[i];
+            float leafY = 1.0f < data.nodeHeight[i] ? std::floor(data.nodeY[i]) : data.nodeY[i];
+            float leafZ = 1.0f < data.nodeDepth[i] ? std::floor(data.nodeZ[i]) : data.nodeZ[i];
 
-            if (data.particleY[particleIdx] > data.nodeY[i] + halfWidth)
-                childIndex |= 2;
-
-            if (data.particleZ[particleIdx] > data.nodeZ[i] + halfWidth)
-                childIndex |= 4;
-
-            float leafX = std::floor(data.particleX[particleIdx]);
-            float leafY = std::floor(data.particleY[particleIdx]);
-            float leafZ = std::floor(data.particleZ[particleIdx]);
-
-            data.nodeChildren[i][childIndex] = createNode(leafX, leafY, leafZ,
+            data.nodeChildren[i][0] = createNode(leafX, leafY, leafZ,
                                                           1.0f < data.nodeWidth[i] ? 1.0f : data.nodeWidth[i],
                                                           morton3D(leafX, leafY, leafZ), data);
+
+            data.nodeTotalMass[i] = data.particleMass[particleIdx];
+            data.nodeCOM_X[i] = data.particleX[particleIdx];
+            data.nodeCOM_Y[i] = data.particleY[particleIdx];
+            data.nodeCOM_Z[i] = data.particleZ[particleIdx];
         }
     }
 }
