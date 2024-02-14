@@ -29,7 +29,7 @@ private:
     int nodeCount = 0;
 
 public:
-    void buildTree(const SimulationData &data);
+    void buildTree(SimulationData &data);
 };
 
 #endif //NBODY3D_OCTREE_H

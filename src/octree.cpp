@@ -219,7 +219,7 @@ void Octree::makeLeafNode(SimulationData& data)
     }
 }
 
-void Octree::buildTree(const SimulationData &data)
+void Octree::buildTree(SimulationData &data)
 {
     nodeCount = 0;
     int rootNodeIndex = createNode(-32768.0f, -32768.0f, -32768.0f,
@@ -242,7 +242,9 @@ void Octree::buildTree(const SimulationData &data)
         int sortedParticleIndex = static_cast<int>(data.idxSorted[i]);
         if (data.particleMass[sortedParticleIndex] > 0)
         {
-            insertParticleToNode(rootNodeIndex, sortedParticleIndex, 100, data);
+            insertParticleToNode(rootNodeIndex, sortedParticleIndex, 16, data);
         }
     }
+
+    //makeLeafNode(data);
 }
