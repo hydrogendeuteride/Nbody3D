@@ -147,6 +147,26 @@ bool Octree::noChildren(const SimulationData &data, int nodeIndex)
     return true;
 }
 
+void Octree::calcNumNodes(SimulationData &data, int numParticles)
+{
+    uint64_t prevCode = 0;
+    int pointer = 0;
+
+    int maxLength = ((64 - __builtin_clzll(data.mortonIndex[numParticles - 1])) / 3) * 3;
+
+    for (int j = maxLength; j > 0; j-=3)
+    {
+        for (int i = 0; i < numParticles; ++i)
+        {
+            if ((data.mortonIndex[i] >> j) != prevCode)
+            {
+                numNodeArray[pointer++] = pointer;
+                prevCode = data.mortonIndex[i] >> j;
+            }
+        }
+    }
+}
+
 int Octree::generateNode(SimulationData &data, int numParticles)    //needs sorted morton code array
 {
     int first;
@@ -196,10 +216,10 @@ int Octree::generateNode(SimulationData &data, int numParticles)    //needs sort
 
                     prevMorton = (data.mortonIndex[i] >> (3 * depth)) & 7;
 
+                    uint64_t nodeMortonCode  = (data.mortonIndex[i]) | 1 << (64 - __builtin_clzll(data.mortonIndex[i])) >> (3 * depth);
+
                     nodeIndex = createNode(childX, childY, childZ, size, size, size,
-                                           data.mortonIndex[i] >> (3 * depth) << (3 * depth), data);
-                    std::cout << nodeIndex << " " << first << " " << last << " " << size << " " << childX << " "
-                              << childY << " " << childZ << " " << depth << " " << std::endl;
+                                           nodeMortonCode, data);
                 }
 
                 rootIndex = nodeIndex;

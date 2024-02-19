@@ -153,10 +153,10 @@ int main()
 
     int root =  tree.buildTree(data, 6);
 
-    printNode(root);
+    //printNode(root);
     std::cout<<std::endl;
 
-    updateAllParticles(0.98f, 0.0f, data);
+    //updateAllParticles(0.98f, 0.0f, data);
     //tree.buildTree(data);
     //printNode(0);
 

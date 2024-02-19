@@ -25,6 +25,10 @@ private:
 
     void nodeChildrenInit(SimulationData& data);
 
+    void calcNumNodes(SimulationData& data, int numParticles);
+
+    int numNodeArray[100];
+
 public:
     int buildTree(SimulationData &data, int numParticles);
 };
