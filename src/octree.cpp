@@ -197,7 +197,8 @@ void Octree::insertParticleToNode(int nodeIndex, int particleIndex, int maxDepth
 
 void Octree::makeLeafNode(SimulationData& data)
 {
-    for (int i = 0; i < nodeCount; ++i)
+    int max = nodeCount;
+    for (int i = 0; i < max; ++i)
     {
         if (noChildren(data, i))
         {
