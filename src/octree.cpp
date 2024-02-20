@@ -204,18 +204,20 @@ void Octree::makeLeafNode(SimulationData& data)
         {
             int particleIdx = data.nodeParticleIndex[i];
 
-            float leafX = 1.0f < data.nodeWidth[i] ? std::floor(data.nodeX[i]) : data.nodeX[i];
-            float leafY = 1.0f < data.nodeHeight[i] ? std::floor(data.nodeY[i]) : data.nodeY[i];
-            float leafZ = 1.0f < data.nodeDepth[i] ? std::floor(data.nodeZ[i]) : data.nodeZ[i];
+            float leafX = 1.0f < data.nodeWidth[i] ? std::floor(data.particleX[particleIdx]) : data.nodeX[i];
+            float leafY = 1.0f < data.nodeHeight[i] ? std::floor(data.particleY[particleIdx]) : data.nodeY[i];
+            float leafZ = 1.0f < data.nodeDepth[i] ? std::floor(data.particleZ[particleIdx]) : data.nodeZ[i];
 
             data.nodeChildren[i][0] = createNode(leafX, leafY, leafZ,
                                                           1.0f < data.nodeWidth[i] ? 1.0f : data.nodeWidth[i],
                                                           morton3D(leafX, leafY, leafZ), data);
 
-            data.nodeTotalMass[i] = data.particleMass[particleIdx];
-            data.nodeCOM_X[i] = data.particleX[particleIdx];
-            data.nodeCOM_Y[i] = data.particleY[particleIdx];
-            data.nodeCOM_Z[i] = data.particleZ[particleIdx];
+            int childIdx = data.nodeChildren[i][0];
+
+            data.nodeTotalMass[childIdx] = data.particleMass[particleIdx];
+            data.nodeCOM_X[childIdx] = data.particleX[particleIdx];
+            data.nodeCOM_Y[childIdx] = data.particleY[particleIdx];
+            data.nodeCOM_Z[childIdx] = data.particleZ[particleIdx];
         }
     }
 }
@@ -247,5 +249,5 @@ void Octree::buildTree(SimulationData &data)
         }
     }
 
-    //makeLeafNode(data);
+    makeLeafNode(data);
 }

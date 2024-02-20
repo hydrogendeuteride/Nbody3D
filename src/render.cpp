@@ -170,7 +170,7 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
         processInput(window);
 
         tree.buildTree(data);
-        updateAllParticles(0.99f, deltaTime * 0.01f, data);
+        updateAllParticles(0.99f, deltaTime * 0.1f, data);
 
         for (size_t i = 0; i < spheres.size(); ++i)
         {
@@ -178,7 +178,6 @@ void Render::draw(Shader &sphereShader, SimulationData& data, Octree& tree)
                                                     glm::vec3(data.particleX[i],
                                                               data.particleY[i],
                                                               data.particleZ[i]));
-            std::cout << data.accX[i] <<" "<< data.accY[i] <<" "<< data.accZ[i] << "\n";
             spheres[i].draw(sphereShader, diffuse, specular, ambient,
                             glm::vec3 (0.0f, 0.0f, 0.0f));
 

@@ -46,6 +46,6 @@ constexpr int NULL_INDEX = -1;
 constexpr int MAX_NODES = 1000;
 constexpr int MAX_PARTICLES = 1000;
 
-constexpr float THETA = 0.5;
+constexpr float THETA = 0.f;
 
 #endif //NBODY3D_SIMULATIONDATA_H

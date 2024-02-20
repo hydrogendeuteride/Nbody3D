@@ -1,4 +1,5 @@
 #include <stack>
+#include <iostream>
 #include "bhtree.h"
 #include "omp.h"
 
@@ -38,7 +39,7 @@ void netAcceleration(int particleIdx, const SimulationData &data)
         float dist = std::sqrt(distX * distX + distY * distY + distZ * distZ);
 
         // Check if the current node is sufficiently far away or a leaf node
-        if (data.nodeWidth[top] / dist <= THETA || noChildren(data, top))
+        if ((data.nodeWidth[top] / dist <= THETA) || noChildren(data, top))
         {
             // Ensure the particle is not in the current node
             if (!isParticleInNode(data.particleX[particleIdx], data.particleY[particleIdx], data.particleZ[particleIdx],
@@ -59,7 +60,7 @@ void netAcceleration(int particleIdx, const SimulationData &data)
             {
                 if (data.nodeChildren[top][i] != NULL_INDEX)
                     stack.push(data.nodeChildren[top][i]);
-            }
+            }//error?
         }
     }
 }

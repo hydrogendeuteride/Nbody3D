@@ -69,7 +69,7 @@ int main()
     particleX[0] = 0.0f;
     particleY[0] = 0.0f;
     particleZ[0] = 0.0f;
-    particleMass[0] = 1000.0f;
+    particleMass[0] = 10.0f;
 
     particleX[1] = 0.0f;
     particleY[1] = -5.0f;
